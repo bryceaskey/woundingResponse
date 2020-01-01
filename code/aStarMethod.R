@@ -19,3 +19,5 @@ imagePath <- "C:/Users/bca08_000/Documents/woundingResponse/data/processedImages
 # Load necessary functions
 source("code/aStarMean.R")
 
+# Loop through all images in specified path, calculate a* mean value for each, and save as a dataframe
+
