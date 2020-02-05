@@ -1,5 +1,5 @@
 # Install and load necessary packages
-packageList <- c("OpenImageR", "ggplot2", "dplyr", "cowplot")
+packageList <- c("OpenImageR", "ggplot2", "dplyr", "cowplot", "tidyr")
 newPackages <- packageList[!(packageList %in% installed.packages()[,"Package"])]
 if(length(newPackages) > 0){
   install.packages(newPackages)
@@ -8,6 +8,7 @@ library(OpenImageR)
 library(ggplot2)
 library(dplyr)
 library(cowplot)
+library(tidyr)
 
 # Set main path
 mainPath <- "C:/Users/Bryce/Documents/woundingResponse"
