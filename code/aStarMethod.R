@@ -16,8 +16,8 @@ if(getwd() != mainPath){
   setwd(mainPath)
 }
 
-# Set path to processed images
-imagePath <- paste(mainPath, "/data/woundingSites/v2", sep="")
+# Set path to wounding site images
+imagePath <- paste(mainPath, "/data/v3/woundingSites", sep="")
 
 # Load necessary functions
 source("code/aStarMean.R")
@@ -61,7 +61,7 @@ day1_3Plot <- ggplot(data=meanDiffData, mapping=aes(x=variety, y=mean1_3, fill=t
   geom_col(position="dodge") +
   geom_errorbar(aes(ymin=mean1_3-stError1_3, ymax=mean1_3+stError1_3), width=0.4, position=position_dodge(.9)) +
   labs(title="Change in a* from day 1 to day 3", x="Variety", y="Mean difference in average a* of wounding site") +
-  ylim(-4, 5) +
+  ylim(0, 12) +
   theme(plot.title=element_text(size=18),
         axis.title.x=element_text(size=14),
         axis.title.y=element_text(size=14),
@@ -72,10 +72,15 @@ day1_5Plot <- ggplot(data=meanDiffData, mapping=aes(x=variety, y=mean1_5, fill=t
   geom_col(position="dodge") +
   geom_errorbar(aes(ymin=mean1_5-stError1_5, ymax=mean1_5+stError1_5), width=0.4, position=position_dodge(.9)) +
   labs(title="Change in a* from day 1 to day 5", x="Variety", y="Mean difference in average a* of wounding site") +
-  ylim(-4, 5) +
+  ylim(0, 12) +
   theme(plot.title=element_text(size=18),
         axis.title.x=element_text(size=14),
         axis.title.y=element_text(size=14),
         axis.text=element_text(size=12))
 print(day1_5Plot)
 
+# Create line graph to show progression over time
+# Error - aStarMean in rawData is a factor?
+meanRawData <- rawData %>%
+  dplyr::group_by(variety, treatment, day) %>%
+  dplyr::summarise(aStarAvg=mean(aStarMean), stError=sd(aStarMean)/sqrt(length(aStarMean)))

@@ -17,12 +17,12 @@ if(getwd() != mainPath){
 }
 
 # Set path to processed images
-imagePath <- paste(mainPath, "/data/woundingSites/v2", sep="")
+imagePath <- paste(mainPath, "/data/v3/woundingSites", sep="")
 
 # Load necessary functions
 source("code/pctPink.R")
 
-pinkData <- read.csv(paste(mainPath, "/data/v2/pinkData_v2.csv", sep=""))
+pinkData <- read.csv(paste(mainPath, "/data/v3/pinkData_v2.csv", sep=""))
 colnames(pinkData)[1] <- "variety"
 
 # Initialize empty lists to store image data
