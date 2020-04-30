@@ -49,4 +49,4 @@ makeHeatmap <- function(imagePath, outputPath, lowerLim=-2, upperLim=2){
 imagePath <- "C:/Users/Bryce/Documents/woundingResponse/data/v3/woundingSites/iceberg_control_5_A-1.png"
 outputPath <- "C:/Users/Bryce/Documents/woundingResponse/data/v3/iceberg_control_5_A-1_heatmap.png"
 
-makeHeatmap(imagePath, outputPath)
+makeHeatmap(imagePath, outputPath, lowerLim=-5, upperLim=10)
