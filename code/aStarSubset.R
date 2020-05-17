@@ -1,9 +1,8 @@
-# !diagnostics off
-
 library(tidyr)
 library(dplyr)
 library(ggplot2)
 library(ggsci)
+library(cowplot)
 
 # Set main path
 mainPath <- "C:/Users/Bryce/Documents/woundingResponse"
@@ -15,7 +14,7 @@ if(getwd() != mainPath){
 allData <- read.csv("data/v3/aStar_rawData.csv")[, 2:7]
 allData[colnames(allData)[1:5]] <- lapply(allData[colnames(allData)[1:5]], factor)
 
-prepareData <- function(allData, var, aStarMin, aStarMax){
+subsetData <- function(allData, var, aStarMin, aStarMax){
   # Subset allData by filtering out samples with initial aStarMean outside of specified bounds
   subsetData <- allData %>%
     filter(variety==var) %>%
@@ -50,6 +49,10 @@ prepareData <- function(allData, var, aStarMin, aStarMax){
     pivot_longer(cols=c("aStarMean_day1", "aStarMean_day3", "aStarMean_day5"), names_to="day",
                  names_prefix="aStarMean_day", values_to="aStarMean")
   
+  return(subsetData)
+}
+  
+prepareData <- function(subsetData) {
   # Define function to calculate standard error
   stError <- function(data){
     return(sd(data)/sqrt(length(data)))
@@ -76,8 +79,8 @@ prepareData <- function(allData, var, aStarMin, aStarMax){
 # romaine: -6 to -3
 # iceberg: -3 to 0
 
-icebergData <- prepareData(allData, "iceberg", -3, 0)
-romaineData <- prepareData(allData, "romaine", -6, -3)
+icebergData <- prepareData(subsetData(allData, "iceberg", -3, 0))
+romaineData <- prepareData(subsetData(allData, "romaine", -6, -3))
 
 # Make line graph of output data
 legendGraph <- ggplot(data=icebergData, mapping=aes(x=day, y=aStarMean_TA, group=treatment)) +
@@ -120,5 +123,3 @@ romaineGraph <- ggplot(data=romaineData, mapping=aes(x=day, y=aStarMean_TA, grou
 bothGraphs <- plot_grid(icebergGraph, romaineGraph, nrow=1)
 finalFigure <- plot_grid(bothGraphs, legend, nrow=2, rel_heights=c(1, 0.1))
 print(finalFigure)
-
-# title=paste("Treatment-averaged a* values for", var, "ribs with initial a* at cut sites between", aStarMin, "and", aStarMax
