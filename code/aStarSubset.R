@@ -1,6 +1,7 @@
 library(tidyr)
 library(dplyr)
 library(ggpubr)
+library(data.table)
 
 # Set main path
 mainPath <- "C:/Users/Bryce/Documents/woundingResponse"

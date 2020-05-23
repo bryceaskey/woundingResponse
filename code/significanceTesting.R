@@ -20,4 +20,5 @@ source("code/aStarSubset.R")
 icebergSubset <- subsetData(allData, "iceberg", -3, 0)
 romaineSubset <- subsetData(allData, "romaine", -6, -3)
 
-significance <- compare_means(aStarMean~treatment, data=icebergSubset, method="t.test", paired=FALSE, group.by="day", ref.group="control")
+icebergSignificance <- compare_means(aStarMean~treatment, data=icebergSubset, method="t.test", paired=FALSE, group.by="day", ref.group="control")
+romaineSignificance <- compare_means(aStarMean~treatment, data=romaineSubset, method="t.test", paired=FALSE, group.by="day", ref.group="control")
