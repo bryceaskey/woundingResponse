@@ -1,9 +1,7 @@
-# !diagnostics off
-
 library(tidyr)
 library(dplyr)
-library(ggplot2)
-library(ggsci)
+library(ggpubr)
+library(data.table)
 
 # Set main path
 mainPath <- "C:/Users/Bryce/Documents/woundingResponse"
@@ -15,17 +13,12 @@ if(getwd() != mainPath){
 allData <- read.csv("data/v3/aStar_rawData.csv")[, 2:7]
 allData[colnames(allData)[1:5]] <- lapply(allData[colnames(allData)[1:5]], factor)
 
-prepareData <- function(allData, var, aStarMin, aStarMax){
+subsetData <- function(allData, var, aStarMin, aStarMax){
   # Subset allData by filtering out samples with initial aStarMean outside of specified bounds
   subsetData <- allData %>%
     filter(variety==var) %>%
     pivot_wider(names_from=day, values_from=aStarMean, names_prefix="aStarMean_day") %>%
     filter(aStarMean_day1>aStarMin & aStarMean_day1<aStarMax)
-  
-  # Print summary of samples remaining after subsetting
-  print(paste("# of control samples remaining:", sum(subsetData$treatment=="control")))
-  print(paste("# of cys500 samples remaining:", sum(subsetData$treatment=="cys500")))
-  print(paste("# of mel1000 samples reminaing:", sum(subsetData$treatment=="mel1000")))
   
   # Recursively filter samples until all treatment groups have the same number of samples
   # Samples are filtered in order of distance from mean of treatment group with the fewest samples
@@ -50,6 +43,10 @@ prepareData <- function(allData, var, aStarMin, aStarMax){
     pivot_longer(cols=c("aStarMean_day1", "aStarMean_day3", "aStarMean_day5"), names_to="day",
                  names_prefix="aStarMean_day", values_to="aStarMean")
   
+  return(subsetData)
+}
+  
+prepareData <- function(subsetData) {
   # Define function to calculate standard error
   stError <- function(data){
     return(sd(data)/sqrt(length(data)))
@@ -70,55 +67,19 @@ prepareData <- function(allData, var, aStarMin, aStarMax){
   graphData$day <- graphData$day - 1
   graphData$day <- factor(graphData$day)
   
+  # Calculate significance values @ each time point via unpaired t-test
+  # Compare each experimental group to control
+  significance <- compare_means(aStarMean~treatment, data=subsetData, method="t.test", paired=FALSE, group.by="day", ref.group="control")
+  significance <- setorder(significance, group2)
+  print(significance)
+  pValues <- c(NA, NA, NA, significance$p)
+  pSymbols <- c(NA, NA, NA, significance$p.signif)
+
+  graphData <- setorder(graphData, treatment)
+  print(graphData)
+  graphData$p <- pValues
+  graphData$pSym <- pSymbols
+  graphData$pSym[graphData$pSym=="ns"] <- NA
+
   return(graphData)
 }
-
-# romaine: -6 to -3
-# iceberg: -3 to 0
-
-icebergData <- prepareData(allData, "iceberg", -3, 0)
-romaineData <- prepareData(allData, "romaine", -6, -3)
-
-# Make line graph of output data
-legendGraph <- ggplot(data=icebergData, mapping=aes(x=day, y=aStarMean_TA, group=treatment)) +
-  geom_line(mapping=aes(color=treatment), size=1) +
-  geom_errorbar(mapping=aes(ymin=aStarMean_TA-SE, ymax=aStarMean_TA+SE, color=treatment), width=0.15, size=0.5) +
-  geom_point(mapping=aes(shape=treatment, color=treatment), size=3) +
-  labs(color="Treatment:", shape="Treatment:") +
-  scale_color_npg() +
-  theme_bw() +
-  theme(legend.direction="horizontal", legend.spacing.x=unit(15, "pt"), legend.text=element_text(size=11, margin=margin(r=50, unit="pt")),
-        legend.title=element_text(size=12, face="bold"))
-legend <- get_legend(legendGraph)
-
-icebergGraph <- ggplot(data=icebergData, mapping=aes(x=day, y=aStarMean_TA, group=treatment)) +
-  geom_line(mapping=aes(color=treatment), size=1) +
-  geom_errorbar(mapping=aes(ymin=aStarMean_TA-SE, ymax=aStarMean_TA+SE, color=treatment), width=0.15, size=0.5) +
-  geom_point(mapping=aes(shape=treatment, color=treatment), size=3) +
-  labs(x="Days after wounding", y="Mean a* of cut site", color="Treatment", shape="Treatment", tag="A") +
-  ylim(-6, 9) +
-  scale_color_npg() +
-  theme_bw() +
-  theme(legend.position="none", 
-        axis.title=element_text(size=12, face="bold"), 
-        axis.text=element_text(size=11),
-        plot.tag=element_text(face="bold"))
-
-romaineGraph <- ggplot(data=romaineData, mapping=aes(x=day, y=aStarMean_TA, group=treatment)) +
-  geom_line(mapping=aes(color=treatment), size=1) +
-  geom_errorbar(mapping=aes(ymin=aStarMean_TA-SE, ymax=aStarMean_TA+SE, color=treatment), width=0.15, size=0.5) +
-  geom_point(mapping=aes(shape=treatment, color=treatment), size=3) +
-  labs(x="Days after wounding", y="Mean a* of cut site", color="Treatment", shape="Treatment", tag="B") +
-  ylim(-6, 9) +
-  scale_color_npg() +
-  theme_bw() +
-  theme(legend.position="none",
-        axis.title=element_text(size=12, face="bold"), 
-        axis.text=element_text(size=11),
-        plot.tag=element_text(face="bold"))
-
-bothGraphs <- plot_grid(icebergGraph, romaineGraph, nrow=1)
-finalFigure <- plot_grid(bothGraphs, legend, nrow=2, rel_heights=c(1, 0.1))
-print(finalFigure)
-
-# title=paste("Treatment-averaged a* values for", var, "ribs with initial a* at cut sites between", aStarMin, "and", aStarMax
