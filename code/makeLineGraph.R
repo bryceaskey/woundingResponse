@@ -21,6 +21,11 @@ source("code/aStarSubset.R")
 icebergData <- prepareData(subsetData(allData, "iceberg", -3, 0))
 romaineData <- prepareData(subsetData(allData, "romaine", -6, -3))
 
+# Change "Melatonin 1000 ppm" to "Proprietary Treatment 1000 ppm" for display in figure
+icebergData$treatment <- as.character(icebergData$treatment)
+icebergData$treatment[icebergData$treatment=="Melatonin 1000 ppm"] <- "Proprietary Treatment 1000 ppm"
+icebergData$treatment <- factor(icebergData$treatment)
+
 # Make line graph of output data
 legendGraph <- ggplot(data=icebergData, mapping=aes(x=day, y=aStarMean_TA, group=treatment)) +
   geom_line(mapping=aes(color=treatment), size=1) +
