@@ -1,5 +1,6 @@
 # woundingReponse
 Image processing method for quantification of wounding response on lettuce leaves.
+https://doi.org/10.1016/j.postharvbio.2023.112307
 
 ## code/
 **processImages.R** - Reads in images of lettuce wounding sites with background pixels removed, parses image name to extract metadata, calculates mean a* of image, and collects all data in a data frame.
